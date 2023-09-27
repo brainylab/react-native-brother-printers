@@ -84,6 +84,7 @@ android {
 
   sourceSets {
     main {
+
       if (isNewArchitectureEnabled()) {
           java.srcDirs += [
             // This is needed to build Kotlin project with NewArch enabled
@@ -107,6 +108,7 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation files('libs/BrotherPrintLibrary.aar')
 }
 
 if (isNewArchitectureEnabled()) {
