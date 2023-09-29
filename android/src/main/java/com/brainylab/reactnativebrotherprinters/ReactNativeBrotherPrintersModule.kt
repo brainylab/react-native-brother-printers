@@ -5,15 +5,24 @@ import android.content.SharedPreferences
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.ReadableMap
 
 import com.brother.sdk.lmprinter.NetworkSearchOption
 import com.brother.sdk.lmprinter.Channel
+import com.brother.sdk.lmprinter.PrinterModel
 import com.brother.sdk.lmprinter.PrinterSearcher
 import com.brother.sdk.lmprinter.PrinterSearchError
+
+import com.brother.ptouch.sdk.Printer;
+import com.brother.ptouch.sdk.PrinterInfo;
+import com.brother.ptouch.sdk.PrinterStatus;
+import com.brother.ptouch.sdk.TemplateInfo;
 
 import org.json.JSONArray
 import org.json.JSONObject
@@ -31,12 +40,49 @@ class ReactNativeBrotherPrintersModule(reactContext: ReactApplicationContext) :
     return NAME
   }
 
-  // Example method
-  // See https://reactnative.dev/docs/native-modules-android
-  // override fun multiply(a: Double, b: Double): Double {
-  //   return a * b
-  // }
+  @ReactMethod
+  override fun printWithTemplate(params: ReadableMap, promise: Promise) {
+    val model = params.getString("model")
+    val ipAddress = params.getString("ip_address")
+    val template = params.getString("template")?.toInt() ?: 1
+    val replacesObject = params.getMap("replaces")
 
+    val modelPrinter = model?.let { PrinterInfo.Model.valueOf(it) }
+
+    if (modelPrinter != null) {
+      val printer = Printer()
+      val settings = printer.printerInfo
+
+      settings.printerModel = modelPrinter
+      settings.ipAddress = ipAddress
+      settings.port = PrinterInfo.Port.NET;
+
+      printer.setPrinterInfo(settings);
+
+      if (printer.startCommunication()) {
+            printer.startPTTPrint(template, null)
+
+            for ((key, value) in replacesObject?.toHashMap() ?: emptyMap()) {
+              printer.replaceTextName(value as String, key)
+            }
+
+            val result = printer.flushPTTPrint()
+            if (result.errorCode != PrinterInfo.ErrorCode.ERROR_NONE) {
+              promise.reject("ERROR -" + result.errorCode)
+            }
+
+            printer.endCommunication()
+
+            promise.resolve("success send print to $model")
+      } else {
+        promise.reject("$model not connected")
+      }
+    } else {
+      promise.reject("$model does not compatible")
+    }
+  }
+
+  @ReactMethod
   override fun searchPrintersInNetwork(promise: Promise) {
     val connectivityManager = reactApplicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val network = connectivityManager.activeNetwork
@@ -66,11 +112,11 @@ class ReactNativeBrotherPrintersModule(reactContext: ReactApplicationContext) :
                 val serialNumber = channel.extraInfo[Channel.ExtraInfoKey.SerialNubmer]
                 val nodeName = channel.extraInfo[Channel.ExtraInfoKey.NodeName]
                 val jsonObject = JSONObject()
-                jsonObject.put("channelInfo", channel.channelInfo)
-                jsonObject.put("modelName", modelName ?: "")
-                jsonObject.put("macAddress", macAddress ?: "")
-                jsonObject.put("serialNumber", serialNumber ?: "")
-                jsonObject.put("nodeName", nodeName ?: "")
+                jsonObject.put("ip_address", channel.channelInfo)
+                jsonObject.put("model_name", modelName ?: "")
+                jsonObject.put("mac_address", macAddress ?: "")
+                jsonObject.put("serial_number", serialNumber ?: "")
+                jsonObject.put("node_name", nodeName ?: "")
                 printerArray.put(jsonObject)
             }
 

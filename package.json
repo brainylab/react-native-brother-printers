@@ -1,6 +1,6 @@
 {
   "name": "@brainylab/react-native-brother-printers",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "printers",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -33,7 +33,11 @@
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepack": "bob build",
     "release": "release-it",
-    "example": "yarn workspace @brainylab/react-native-brother-printers-example"
+    "example": "yarn workspace @brainylab/react-native-brother-printers-example",
+    "commit:add": "git add .",
+    "commit:create": "cz",
+    "commit:push": "git push",
+    "commit": "yarn commit:add && yarn commit:create && yarn commit:push"
   },
   "keywords": [
     "react-native",
@@ -51,18 +55,18 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
+    "@brainylab/eslint-config-react-native": "^0.0.6",
     "@commitlint/config-conventional": "^17.0.2",
     "@evilmartians/lefthook": "^1.2.2",
-    "@react-native/eslint-config": "^0.72.2",
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^28.1.2",
     "@types/react": "~17.0.21",
     "@types/react-native": "0.70.0",
+    "commitizen": "^4.3.0",
     "commitlint": "^17.0.2",
+    "cz-conventional-changelog": "^3.3.0",
     "del-cli": "^5.0.0",
     "eslint": "^8.4.1",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.0.0",
     "jest": "^28.1.1",
     "pod-install": "^0.1.0",
     "prettier": "^2.0.5",
@@ -94,6 +98,11 @@
       "<rootDir>/lib/"
     ]
   },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
@@ -115,36 +124,6 @@
         "preset": "angular"
       }
     }
-  },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@react-native",
-      "prettier"
-    ],
-    "rules": {
-      "prettier/prettier": [
-        "error",
-        {
-          "quoteProps": "consistent",
-          "singleQuote": true,
-          "tabWidth": 2,
-          "trailingComma": "es5",
-          "useTabs": false
-        }
-      ]
-    }
-  },
-  "eslintIgnore": [
-    "node_modules/",
-    "lib/"
-  ],
-  "prettier": {
-    "quoteProps": "consistent",
-    "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "es5",
-    "useTabs": false
   },
   "react-native-builder-bob": {
     "source": "src",
