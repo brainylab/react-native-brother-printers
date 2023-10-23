@@ -18,6 +18,6 @@ export async function printWithTemplate(
 
     console.log(value);
   } catch (err) {
-    console.error(err);
+    throw err;
   }
 }
